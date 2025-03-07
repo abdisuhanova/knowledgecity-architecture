@@ -72,14 +72,14 @@ KnowledgeCity is a globally accessible educational platform designed for high av
 ### Additional Microservices
 
 **Stack:**
-- EKS/GKE
+- EKS
 - Docker
 - Helm
 - API Gateway
 - AWS App Mesh/Consul
 
 **Description:**
-- **EKS/GKE:** Kubernetes clusters for consistent deployment and scaling of future services.
+- **EKS:** Kubernetes clusters for consistent deployment and scaling of future services.
 - **Docker/Helm:** Standardizes packaging and deployment across teams.
 - **API Gateway:** Manages API versioning, rate limiting, and authentication for new microservices.
 - **Service Mesh (AWS App Mesh/Consul):** Enables service discovery, observability, and secure communication between microservices.
