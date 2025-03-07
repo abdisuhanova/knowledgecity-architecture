@@ -49,74 +49,107 @@ KnowledgeCity is a globally accessible educational platform designed for high av
 - **ALB**: Load balancing for analytics apps for performance and high availability.
 - **HPA**: Horizontal Pod Autoscaling, scaling app pods based on traffic.
 
-#### Video Conversion/Encoding Microservice:
-- Converts videos into optimal formats.
+## 2.1 System Components
 
-#### Additional Microservices:
-- Designed with containerized deployments to allow future expansion.
+### Video Conversion/Encoding Microservice
 
-### 2.2 Multi-Regional Deployment
+**Stack:**
+- AWS Elemental MediaConvert
+- S3
+- Lambda
+- SQS/SNS
+- EKS/Fargate
+- CloudFront
 
-- **Saudi Arabian users**: Data resides in Saudi Arabia (AWS Middle East region).
-- **U.S. users**: Data resides in the U.S. (AWS US region).
-- **Educational content**: Cached globally via a CDN.
+**Description:**
+- **AWS Elemental MediaConvert:** Serverless video processing service for format conversion and adaptive bitrate streaming.
+- **S3:** Stores raw uploads (`S3 Standard`) and processed videos (`S3 Standard-Infrequent Access` for cost efficiency).
+- **Lambda:** Automatically triggers encoding workflows upon S3 upload events.
+- **SQS/SNS:** Manages asynchronous job queues and notifications between uploads, encoding, and delivery.
+- **EKS/Fargate:** Orchestrates containerized encoding tasks for scalability.
+- **CloudFront:** Delivers processed videos via a global CDN with regional edge caching.
 
-##### Multi-AZ Redundancy:
-- Each region utilizes at least two availability zones for high availability (99.99% SLA).
+### Additional Microservices
 
-### 2.3 Global Content Delivery
+**Stack:**
+- EKS/GKE
+- Docker
+- Helm
+- API Gateway
+- AWS App Mesh/Consul
 
-- **CDN** (e.g., AWS CloudFront, Fastly, or Cloudflare): For caching educational content globally.
-- **Edge caching strategies**: Reduce latency for video playback.
-- **Multi-tier caching** (Redis/Memcached): Improves backend response times.
+**Description:**
+- **EKS/GKE:** Kubernetes clusters for consistent deployment and scaling of future services.
+- **Docker/Helm:** Standardizes packaging and deployment across teams.
+- **API Gateway:** Manages API versioning, rate limiting, and authentication for new microservices.
+- **Service Mesh (AWS App Mesh/Consul):** Enables service discovery, observability, and secure communication between microservices.
 
-### 2.4 Scalability
+## 2.2 Data Distribution and Multi-Regional Setup
 
-- **Autoscaling Groups**: For backend services.
-- **Kubernetes (EKS/GKE) or ECS/Fargate**: For orchestrating containerized microservices.
-- **Horizontal Scaling**: Based on traffic spikes.
-- **Cost Optimization**: Through tiered storage and on-demand compute scaling.
+### Regional Data Residency
+- **Saudi Arabia:** User data stored in AWS Middle East (Bahrain) region using Aurora Global Database (read replicas in multiple AZs).
+- **United States:** User data stored in AWS US East (N. Virginia) with DynamoDB Global Tables for cross-region replication.
 
-### 2.5 Infrastructure Components
+### Global Educational Content
+- **Central Repository:** Stored in S3 (Standard class) in a primary region (e.g., US East).
+- **Regional Caching:** Replicated to edge locations via CloudFront, with cache TTLs optimized for course updates.
 
-| Component               | Technology Choice         | Justification                                                |
-|-------------------------|---------------------------|--------------------------------------------------------------|
-| **Cloud Provider**       | AWS/GCP                   | Global coverage, compliance, and reliability.                |
-| **Container Orchestration** | Kubernetes (EKS/GKE) or ECS/Fargate | Simplifies microservices management, autoscaling.             |
-| **CDN**                  | AWS CloudFront/Fastly     | Low latency, global caching.                                 |
-| **Database**             | Amazon RDS (PostgreSQL/MySQL) | Regional compliance, high availability.                       |
-| **Analytics**            | ClickHouse                | Efficient analytical queries.                                |
-| **Caching**              | Redis/Memcached           | Improves response times.                                     |
-| **Object Storage**       | S3/Google Cloud Storage   | Cost-effective for video storage.                            |
+### Multi-AZ Redundancy
+- Databases deployed across 3 AZs per region.
+- Microservices run in EKS clusters spanning 2+ AZs, with pod anti-affinity rules.
+
+## 2.4 Media Processing and Delivery
+
+### Upload Workflow
+1. Users upload raw videos to regional S3 buckets (e.g., `US-East` for U.S. users).
+2. S3 event triggers Lambda, which submits a job to AWS Elemental MediaConvert via SQS.
+
+### Encoding
+- MediaConvert processes videos into HLS/DASH formats for adaptive streaming.
+- Processed videos stored in S3 with lifecycle policies to transition to cheaper storage classes after 30 days.
+
+### Delivery
+- CloudFront serves videos from edge locations, with geo-routing via Route 53.
+
+### Cache Strategies
+- Hot content cached at edge (24-hour TTL).
+- Cold content fetched from origin with stale-while-revalidate headers.
+
+## 2.5 Optimization and Scalability
+
+### Autoscaling
+- **EC2/ASG:** Scales PHP monolith instances based on CPU/RAM thresholds.
+- **Karpenter (EKS):** Automatically provisions nodes for microservices during traffic spikes.
+- **Lambda:** Serverless video encoding scales to zero when idle.
+
+### Cost Optimization
+- **Storage Tiering:** S3 Intelligent-Tiering for videos, Glacier Deep Archive for backups.
+- **Spot Instances:** Used for non-critical batch jobs (e.g., analytics).
+
+### Regional Expansion
+- **Infrastructure as Code (IaC):** Terraform modules deploy repeatable stacks (VPC, EKS, RDS) to new regions.
+- **Database Sharding:** Future-proofs user growth with horizontal partitioning.
 
 ## 3. Security, Observability, and Compliance
 
-### 3.1 Security Measures
+### Video Processing Security
+- **Signed URLs (CloudFront):** Restrict access to processed videos.
+- **S3 bucket policies:** Enforce encryption and block public access.
 
-- **Access Control**: IAM roles, RBAC, least privilege principle.
-- **DDoS Protection**: AWS Shield/Cloudflare DDoS mitigation.
-- **WAF Usage**: Web Application Firewall for filtering malicious traffic.
-- **Encryption**:
-  - **Data at rest**: Encrypted using AES-256.
-  - **Data in transit**: TLS 1.2+ enforced.
-- **Secrets Management**: AWS Secrets Manager/HashiCorp Vault.
+### Compliance
+- **Data Residency:** AWS Config rules audit regional data storage.
+- **GDPR/Regional Laws:** Encryption (AWS KMS) and tokenization for PII.
 
-### 3.2 Observability (Monitoring, Logging, Tracing)
+### Observability
+- **Video Metrics:** CloudFront Real-Time Logs track buffer rates and playback errors.
+- **ECS/EKS:** Prometheus exporters collect container-level metrics.
 
-- **Monitoring Tools**: Prometheus, Grafana for real-time metrics.
-- **Logging Stack**: EFK (Elasticsearch, Fluentd, Kibana) or Loki for structured logging.
-- **Tracing**: OpenTelemetry for distributed tracing.
+---
 
-##### Critical Metrics:
-- API response times, error rates, CPU/memory utilization.
-- CDN cache hit ratios, video streaming performance.
+## Deployment
 
-### 3.3 Compliance & Regulatory Adaptation
-
-- **Data Residency Laws**: Ensuring Saudi Arabian data stays in Saudi Arabia.
-- **Anomaly Detection**: AI-based monitoring for unusual activity (e.g., AWS GuardDuty).
-- **Future Adaptability**: Infrastructure as Code (Terraform/CDK) to modify deployments as regulations change.
-
-## 4. Conclusion
-
-This architecture ensures high availability, low latency, compliance with data regulations, and future scalability while optimizing costs. The use of multi-regional deployments, CDNs, container orchestration, and security best practices guarantees a robust and efficient educational platform.
+### Pre-requisites
+- AWS CLI
+- Terraform for IaC
+- Docker for containerized services
+- Helm for Kubernetes deployments
