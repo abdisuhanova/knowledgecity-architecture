@@ -17,7 +17,7 @@ The system is designed to provide a scalable, fault-tolerant logging solution fo
 
 ### **2. Architecture Overview**  
 **Diagram Highlights**:  
-![Architecture Diagram](link_to_your_diagram_here)  
+![Architecture Diagram](elasticsearch)  
 1. **EKS Clusters**: Host containerized applications emitting logs.  
 2. **Fluentd (DaemonSet)**: Deployed on each EKS node to collect logs.  
 3. **Elasticsearch**: Central log storage with indexing and search capabilities.  
