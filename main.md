@@ -17,7 +17,7 @@ The system is designed to provide a scalable, fault-tolerant logging solution fo
 
 ### **2. Architecture Overview**  
 **Diagram Highlights**:  
-![Architecture Diagram](elasticsearch)  
+![Architecture Diagram](ElasticSearch.png){width=60%} 
 1. **EKS Clusters**: Host containerized applications emitting logs.  
 2. **Fluentd (DaemonSet)**: Deployed on each EKS node to collect logs.  
 3. **Elasticsearch**: Central log storage with indexing and search capabilities.  
@@ -119,12 +119,12 @@ The system is designed to provide a scalable, fault-tolerant logging solution fo
 ### **8. Project Roadmap**  
 | **Phase**                     | **Tasks**                                   | **Timeframe** |  
 |-------------------------------|---------------------------------------------|---------------|  
-| **Terraform Setup**           | Define VPC, IAM roles, S3 backend.         | 1 week        |  
-| **EKS Cluster Deployment**    | Deploy cluster, node groups, and add-ons.   | 2 weeks       |  
-| **Fluentd Log Pipeline**      | Configure DaemonSet, filters, Elasticsearch.| 1 week        |  
-| **Elasticsearch & Kibana**    | Deploy OpenSearch domain, set up Kibana.   | 1 week        |  
-| **CI/CD Automation**          | GitHub Actions for Terraform/Fluentd.       | 1 week        |  
-| **Testing & Validation**      | Load testing, security audits.             | 1 week        |  
+| **Terraform Setup**           | Define VPC, IAM roles, S3 backend.         | 4 weeks       |  
+| **EKS Cluster Deployment**    | Deploy cluster, node groups, and add-ons.   | 6 weeks       |  
+| **Fluentd Log Pipeline**      | Configure DaemonSet, filters, Elasticsearch.| 4 weeks       |  
+| **Elasticsearch & Kibana**    | Deploy OpenSearch domain, set up Kibana.   | 4 weeks       |  
+| **CI/CD Automation**          | GitHub Actions for Terraform/Fluentd.       | 4 weeks       |  
+| **Testing & Validation**      | Load testing, security audits.             | 4 weeks       |  
 
 **Total Estimated Time**: 6 weeks  
 
