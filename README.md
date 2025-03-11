@@ -5,7 +5,7 @@
 KnowledgeCity is a globally accessible educational platform designed for high availability, low latency, and scalability. The system consists of a front-end Single Page Application (SPA), a monolithic PHP backend, multiple microservices, and a multi-regional deployment strategy ensuring data residency compliance.
 
 ## 2. Architectural Design
-
+![Architecture Diagram](knowledgecity.png){width=60%} 
 ### 2.1 System Components
 
 #### Front-End:
